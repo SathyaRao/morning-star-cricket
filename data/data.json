@@ -55,6 +55,14 @@
       "id": "1788354669636",
       "createdAt": "2026-09-02T13:11:09.636Z",
       "status": "active"
+    },
+    {
+      "name": "Glady",
+      "phone": "",
+      "role": "batsman",
+      "id": "1788354674723",
+      "createdAt": "2026-09-02T13:11:14.723Z",
+      "status": "active"
     }
   ],
   "sessions": []
