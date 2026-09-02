@@ -5,7 +5,7 @@
  */
 const Store = {
     // GitHub config - update OWNER and REPO to match your repository
-    OWNER: 'sathyarao',
+    OWNER: 'SathyaRao',
     REPO: 'morning-star-cricket',
     FILE_PATH: 'data/data.json',
     BRANCH: 'main',
