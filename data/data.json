@@ -375,6 +375,14 @@
       "id": "1788355283932",
       "createdAt": "2026-09-02T13:21:23.932Z",
       "status": "active"
+    },
+    {
+      "name": "Karthik Rao",
+      "phone": "",
+      "role": "bowler",
+      "id": "1788355296659",
+      "createdAt": "2026-09-02T13:21:36.659Z",
+      "status": "active"
     }
   ],
   "sessions": []
