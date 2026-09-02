@@ -327,6 +327,14 @@
       "id": "1788355193339",
       "createdAt": "2026-09-02T13:19:53.339Z",
       "status": "active"
+    },
+    {
+      "name": "Pradeep Acharya",
+      "phone": "",
+      "role": "all-rounder",
+      "id": "1788355202388",
+      "createdAt": "2026-09-02T13:20:02.388Z",
+      "status": "active"
     }
   ],
   "sessions": []
