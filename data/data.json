@@ -215,6 +215,14 @@
       "id": "1788354961075",
       "createdAt": "2026-09-02T13:16:01.075Z",
       "status": "active"
+    },
+    {
+      "name": "Shashi Acharya",
+      "phone": "",
+      "role": "all-rounder",
+      "id": "1788354978019",
+      "createdAt": "2026-09-02T13:16:18.019Z",
+      "status": "active"
     }
   ],
   "sessions": []
