@@ -47,6 +47,14 @@
       "id": "1788354659051",
       "createdAt": "2026-09-02T13:10:59.051Z",
       "status": "active"
+    },
+    {
+      "name": "Ananth Mallya",
+      "phone": "",
+      "role": "batsman",
+      "id": "1788354669636",
+      "createdAt": "2026-09-02T13:11:09.636Z",
+      "status": "active"
     }
   ],
   "sessions": []
