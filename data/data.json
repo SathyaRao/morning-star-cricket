@@ -175,6 +175,14 @@
       "id": "1788354858587",
       "createdAt": "2026-09-02T13:14:18.587Z",
       "status": "active"
+    },
+    {
+      "name": "Rahil",
+      "phone": "",
+      "role": "all-rounder",
+      "id": "1788354872092",
+      "createdAt": "2026-09-02T13:14:32.092Z",
+      "status": "active"
     }
   ],
   "sessions": []
