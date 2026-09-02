@@ -140,8 +140,8 @@ async function handlePlayerSubmit(e) {
         role: document.getElementById('playerRole').value,
     };
 
-    if (!playerData.name || !playerData.phone) {
-        Utils.showToast('Please fill name and phone', 'error');
+    if (!playerData.name) {
+        Utils.showToast('Please enter the player name', 'error');
         return;
     }
 
@@ -176,7 +176,7 @@ function renderPlayers() {
         return `
             <tr>
                 <td>${player.name}</td>
-                <td>${player.phone}</td>
+                <td>${player.phone || '-'}</td>
                 <td style="text-transform:capitalize;">${player.role || '-'}</td>
                 <td>${att.present}/${att.total} (${att.percentage}%)</td>
                 <td><span class="badge badge-${player.status}">${player.status}</span></td>
