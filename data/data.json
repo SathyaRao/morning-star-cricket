@@ -1,4 +1,13 @@
 {
-  "players": [],
+  "players": [
+    {
+      "name": "Sathya",
+      "phone": "8618250594",
+      "role": "all-rounder",
+      "id": "1788351264153",
+      "createdAt": "2026-09-02T12:14:24.153Z",
+      "status": "active"
+    }
+  ],
   "sessions": []
 }
