@@ -199,6 +199,14 @@
       "id": "1788354937827",
       "createdAt": "2026-09-02T13:15:37.827Z",
       "status": "active"
+    },
+    {
+      "name": "Arun Acharya",
+      "phone": "",
+      "role": "all-rounder",
+      "id": "1788354949371",
+      "createdAt": "2026-09-02T13:15:49.371Z",
+      "status": "active"
     }
   ],
   "sessions": []
