@@ -79,6 +79,14 @@
       "id": "1788354703299",
       "createdAt": "2026-09-02T13:11:43.299Z",
       "status": "active"
+    },
+    {
+      "name": "Yatish",
+      "phone": "",
+      "role": "all-rounder",
+      "id": "1788354711171",
+      "createdAt": "2026-09-02T13:11:51.171Z",
+      "status": "active"
     }
   ],
   "sessions": []
