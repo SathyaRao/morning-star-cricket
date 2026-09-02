@@ -52,6 +52,81 @@ const Utils = {
     hideLoading() {
         const loader = document.getElementById('globalLoader');
         if (loader) loader.style.display = 'none';
+    },
+
+    /**
+     * Renders pagination controls into a container and calls renderPageFn(pageItems)
+     * with the current page's slice of data.
+     *
+     * @param {Object} opts
+     * @param {Array}  opts.items       - full array of records
+     * @param {string} opts.containerId - id of the element to render pagination controls into
+     * @param {Function} opts.renderPageFn - function(pageItems) that renders a page
+     * @param {number} [opts.pageSize=10]  - rows per page
+     * @param {string} [opts.stateKey]     - unique key to remember page size/current page
+     */
+    paginate(opts) {
+        const { items, containerId, renderPageFn } = opts;
+        const container = document.getElementById(containerId);
+        if (!container) {
+            renderPageFn(items);
+            return;
+        }
+
+        const stateKey = opts.stateKey || containerId;
+        this._pagState = this._pagState || {};
+        const prev = this._pagState[stateKey] || {};
+        let pageSize = opts.pageSize || prev.pageSize || 10;
+        let currentPage = prev.currentPage || 1;
+
+        const total = items.length;
+        const totalPages = Math.max(1, Math.ceil(total / pageSize));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const draw = () => {
+            const start = (currentPage - 1) * pageSize;
+            const pageItems = items.slice(start, start + pageSize);
+            renderPageFn(pageItems);
+
+            const from = total === 0 ? 0 : start + 1;
+            const to = Math.min(start + pageSize, total);
+
+            container.innerHTML = `
+                <span class="page-info">${from}-${to} of ${total}</span>
+                <label style="color:#aaa;font-size:0.85rem;">Rows:
+                    <select data-role="size">
+                        <option value="10" ${pageSize === 10 ? 'selected' : ''}>10</option>
+                        <option value="20" ${pageSize === 20 ? 'selected' : ''}>20</option>
+                        <option value="50" ${pageSize === 50 ? 'selected' : ''}>50</option>
+                    </select>
+                </label>
+                <button data-role="first" ${currentPage === 1 ? 'disabled' : ''}>&laquo;</button>
+                <button data-role="prev" ${currentPage === 1 ? 'disabled' : ''}>Prev</button>
+                <span class="page-info" style="margin:0 0.3rem;">Page ${currentPage} / ${totalPages}</span>
+                <button data-role="next" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+                <button data-role="last" ${currentPage === totalPages ? 'disabled' : ''}>&raquo;</button>
+            `;
+
+            container.querySelector('[data-role="size"]').onchange = (e) => {
+                pageSize = parseInt(e.target.value, 10);
+                currentPage = 1;
+                this._pagState[stateKey] = { pageSize, currentPage };
+                Utils.paginate({ ...opts, pageSize });
+            };
+            const go = (p) => {
+                currentPage = p;
+                this._pagState[stateKey] = { pageSize, currentPage };
+                draw();
+            };
+            container.querySelector('[data-role="first"]').onclick = () => go(1);
+            container.querySelector('[data-role="prev"]').onclick = () => go(Math.max(1, currentPage - 1));
+            container.querySelector('[data-role="next"]').onclick = () => go(Math.min(totalPages, currentPage + 1));
+            container.querySelector('[data-role="last"]').onclick = () => go(totalPages);
+
+            this._pagState[stateKey] = { pageSize, currentPage };
+        };
+
+        draw();
     }
 };
 

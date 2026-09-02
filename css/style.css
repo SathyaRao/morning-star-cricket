@@ -469,3 +469,50 @@ table tr:hover {
         font-size: 1.8rem;
     }
 }
+
+/* Pagination controls */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.pagination .page-info {
+    color: #aaa;
+    font-size: 0.85rem;
+    margin-right: auto;
+}
+
+.pagination button {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #e0e0e0;
+    padding: 0.4rem 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: #f0c040;
+    color: #000;
+    border-color: #f0c040;
+}
+
+.pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination select {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #e0e0e0;
+    padding: 0.35rem 0.5rem;
+    border-radius: 5px;
+    font-size: 0.85rem;
+}

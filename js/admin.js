@@ -168,26 +168,34 @@ function renderPlayers() {
 
     if (players.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">No players added yet</td></tr>';
+        document.getElementById('playersPagination').innerHTML = '';
         return;
     }
 
-    tbody.innerHTML = players.map(player => {
-        const att = Store.getPlayerAttendance(player.id);
-        return `
-            <tr>
-                <td>${player.name}</td>
-                <td>${player.phone || '-'}</td>
-                <td style="text-transform:capitalize;">${player.role || '-'}</td>
-                <td>${att.present}/${att.total} (${att.percentage}%)</td>
-                <td><span class="badge badge-${player.status}">${player.status}</span></td>
-                <td>
-                    <button class="btn btn-sm btn-primary" onclick="editPlayer('${player.id}')">Edit</button>
-                    <button class="btn btn-sm btn-danger" onclick="togglePlayerStatus('${player.id}')">${player.status === 'active' ? 'Deactivate' : 'Activate'}</button>
-                    <button class="btn btn-sm btn-danger" onclick="deletePlayer('${player.id}')">Delete</button>
-                </td>
-            </tr>
-        `;
-    }).join('');
+    Utils.paginate({
+        items: players,
+        containerId: 'playersPagination',
+        stateKey: 'players',
+        renderPageFn: (pageItems) => {
+            tbody.innerHTML = pageItems.map(player => {
+                const att = Store.getPlayerAttendance(player.id);
+                return `
+                    <tr>
+                        <td>${player.name}</td>
+                        <td>${player.phone || '-'}</td>
+                        <td style="text-transform:capitalize;">${player.role || '-'}</td>
+                        <td>${att.present}/${att.total} (${att.percentage}%)</td>
+                        <td><span class="badge badge-${player.status}">${player.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editPlayer('${player.id}')">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="togglePlayerStatus('${player.id}')">${player.status === 'active' ? 'Deactivate' : 'Activate'}</button>
+                            <button class="btn btn-sm btn-danger" onclick="deletePlayer('${player.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    });
 }
 
 function editPlayer(id) {
@@ -246,22 +254,30 @@ function renderHistory() {
 
     if (sessions.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">No sessions recorded yet</td></tr>';
+        document.getElementById('historyPagination').innerHTML = '';
         return;
     }
 
-    tbody.innerHTML = sessions.map(session => `
-        <tr>
-            <td>${Utils.formatDate(session.date)}</td>
-            <td style="text-transform:capitalize;">${session.type || '-'}</td>
-            <td>${(session.present || []).length}</td>
-            <td>${activePlayers}</td>
-            <td>${session.notes || '-'}</td>
-            <td>
-                <button class="btn btn-sm btn-primary" onclick="loadSession('${session.date}')">Edit</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteSession('${session.id}')">Delete</button>
-            </td>
-        </tr>
-    `).join('');
+    Utils.paginate({
+        items: sessions,
+        containerId: 'historyPagination',
+        stateKey: 'history',
+        renderPageFn: (pageItems) => {
+            tbody.innerHTML = pageItems.map(session => `
+                <tr>
+                    <td>${Utils.formatDate(session.date)}</td>
+                    <td style="text-transform:capitalize;">${session.type || '-'}</td>
+                    <td>${(session.present || []).length}</td>
+                    <td>${activePlayers}</td>
+                    <td>${session.notes || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="loadSession('${session.date}')">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteSession('${session.id}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    });
 }
 
 function loadSession(date) {

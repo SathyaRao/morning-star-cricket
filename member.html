@@ -106,13 +106,14 @@
             </div>
             <div id="playerList">
             </div>
+            <div class="pagination" id="playerListPagination" style="padding:1rem 1.5rem;"></div>
         </div>
     </div>
 
     <script src="js/store.js"></script>
     <script src="js/utils.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('dataReady', () => {
             renderPage();
         });
 
@@ -134,6 +135,7 @@
 
             if (players.length === 0) {
                 container.innerHTML = '<p style="padding:1.5rem; text-align:center; color:#888;">No players registered yet.</p>';
+                document.getElementById('playerListPagination').innerHTML = '';
                 return;
             }
 
@@ -147,29 +149,36 @@
                 };
             }).sort((a, b) => b.count - a.count);
 
-            container.innerHTML = playerData.map(player => {
-                const role = player.role ? player.role.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
-                const datesHtml = player.dates.map(d =>
-                    `<span class="date-item">${Utils.formatDate(d.date)}<span class="type-tag">${d.type || ''}</span></span>`
-                ).join('');
+            Utils.paginate({
+                items: playerData,
+                containerId: 'playerListPagination',
+                stateKey: 'playerList',
+                renderPageFn: (pageItems) => {
+                    container.innerHTML = pageItems.map(player => {
+                        const role = player.role ? player.role.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
+                        const datesHtml = player.dates.map(d =>
+                            `<span class="date-item">${Utils.formatDate(d.date)}<span class="type-tag">${d.type || ''}</span></span>`
+                        ).join('');
 
-                return `
-                    <div>
-                        <div class="player-row">
+                        return `
                             <div>
-                                <div class="name">${player.name}</div>
-                                <div class="role">${role}</div>
+                                <div class="player-row">
+                                    <div>
+                                        <div class="name">${player.name}</div>
+                                        <div class="role">${role}</div>
+                                    </div>
+                                    <div class="count" onclick="toggleDates('dates-${player.id}')" title="Click to see dates">
+                                        ${player.count} ${player.count === 1 ? 'day' : 'days'}
+                                    </div>
+                                </div>
+                                <div class="dates-panel" id="dates-${player.id}">
+                                    ${datesHtml || '<span style="color:#888;">No attendance recorded</span>'}
+                                </div>
                             </div>
-                            <div class="count" onclick="toggleDates('dates-${player.id}')" title="Click to see dates">
-                                ${player.count} ${player.count === 1 ? 'day' : 'days'}
-                            </div>
-                        </div>
-                        <div class="dates-panel" id="dates-${player.id}">
-                            ${datesHtml || '<span style="color:#888;">No attendance recorded</span>'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                        `;
+                    }).join('');
+                }
+            });
         }
 
         function toggleDates(id) {
