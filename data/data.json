@@ -71,6 +71,14 @@
       "id": "1788354683811",
       "createdAt": "2026-09-02T13:11:23.811Z",
       "status": "active"
+    },
+    {
+      "name": "Mustafa",
+      "phone": "",
+      "role": "batsman",
+      "id": "1788354691187",
+      "createdAt": "2026-09-02T13:11:31.187Z",
+      "status": "active"
     }
   ],
   "sessions": []
