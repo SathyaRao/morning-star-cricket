@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Attendance - Morning Star Cricket</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid #30363d;
+            transition: background 0.2s;
+        }
+        .player-row:last-child {
+            border-bottom: none;
+        }
+        .player-row:hover {
+            background: #1c2128;
+        }
+        .player-row .name {
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        .player-row .role {
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: capitalize;
+        }
+        .player-row .count {
+            background: #f0c040;
+            color: #000;
+            font-weight: 700;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .player-row .count:hover {
+            transform: scale(1.1);
+            background: #ffe066;
+        }
+        .dates-panel {
+            display: none;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            margin: 0.3rem 0 0.5rem 1rem;
+        }
+        .dates-panel.show {
+            display: block;
+        }
+        .dates-panel .date-item {
+            display: inline-block;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 5px;
+            padding: 0.3rem 0.6rem;
+            margin: 0.2rem;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+        .dates-panel .date-item .type-tag {
+            color: #f0c040;
+            font-size: 0.75rem;
+            margin-left: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">MORNING STAR <span>Cricket</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="admin.html">Admin</a></li>
+            <li><a href="member.html">My Stats</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Team Attendance</h1>
+        <p style="color:#aaa; margin-bottom:1.5rem;">Click on the attendance count to see the dates.</p>
+
+        <!-- Summary -->
+        <div class="stats-cards">
+            <div class="card">
+                <h3>Total Sessions</h3>
+                <div class="stat" id="totalSessions">0</div>
+            </div>
+            <div class="card">
+                <h3>This Month</h3>
+                <div class="stat" id="monthSessions">0</div>
+                <div class="label">sessions</div>
+            </div>
+        </div>
+
+        <!-- Player List -->
+        <div class="table-container" style="padding:0;">
+            <div style="padding:1rem 1.5rem; border-bottom:1px solid #30363d;">
+                <h2 style="margin:0;">Players</h2>
+            </div>
+            <div id="playerList">
+            </div>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPage();
+        });
+
+        function renderPage() {
+            const sessions = Store.getSessions();
+            const currentMonth = new Date().toISOString().substring(0, 7);
+            const monthSessions = sessions.filter(s => s.date && s.date.startsWith(currentMonth));
+
+            document.getElementById('totalSessions').textContent = sessions.length;
+            document.getElementById('monthSessions').textContent = monthSessions.length;
+
+            renderPlayerList();
+        }
+
+        function renderPlayerList() {
+            const players = Store.getPlayers().filter(p => p.status === 'active');
+            const sessions = Store.getSessions().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            const container = document.getElementById('playerList');
+
+            if (players.length === 0) {
+                container.innerHTML = '<p style="padding:1.5rem; text-align:center; color:#888;">No players registered yet.</p>';
+                return;
+            }
+
+            // Calculate attendance for each player
+            const playerData = players.map(player => {
+                const attendedSessions = sessions.filter(s => (s.present || []).includes(player.id));
+                return {
+                    ...player,
+                    count: attendedSessions.length,
+                    dates: attendedSessions.map(s => ({ date: s.date, type: s.type })),
+                };
+            }).sort((a, b) => b.count - a.count);
+
+            container.innerHTML = playerData.map(player => {
+                const role = player.role ? player.role.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
+                const datesHtml = player.dates.map(d =>
+                    `<span class="date-item">${Utils.formatDate(d.date)}<span class="type-tag">${d.type || ''}</span></span>`
+                ).join('');
+
+                return `
+                    <div>
+                        <div class="player-row">
+                            <div>
+                                <div class="name">${player.name}</div>
+                                <div class="role">${role}</div>
+                            </div>
+                            <div class="count" onclick="toggleDates('dates-${player.id}')" title="Click to see dates">
+                                ${player.count} ${player.count === 1 ? 'day' : 'days'}
+                            </div>
+                        </div>
+                        <div class="dates-panel" id="dates-${player.id}">
+                            ${datesHtml || '<span style="color:#888;">No attendance recorded</span>'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleDates(id) {
+            const panel = document.getElementById(id);
+            panel.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

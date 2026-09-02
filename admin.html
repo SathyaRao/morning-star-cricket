@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Morning Star Cricket</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">MORNING STAR <span>Cricket</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="admin.html">Admin</a></li>
+            <li><a href="member.html">My Stats</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Admin Panel</h1>
+
+        <!-- Stats -->
+        <div class="stats-cards">
+            <div class="card">
+                <h3>Total Players</h3>
+                <div class="stat" id="statPlayers">0</div>
+            </div>
+            <div class="card">
+                <h3>Total Sessions</h3>
+                <div class="stat" id="statSessions">0</div>
+            </div>
+            <div class="card">
+                <h3>This Month</h3>
+                <div class="stat" id="statMonth">0</div>
+                <div class="label">sessions</div>
+            </div>
+            <div class="card">
+                <h3>Avg Attendance</h3>
+                <div class="stat" id="statAvg">0</div>
+                <div class="label">per session</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+            <button class="btn btn-primary" id="tabAttendance" onclick="showTab('attendance')">Mark Attendance</button>
+            <button class="btn btn-danger" id="tabPlayers" onclick="showTab('players')">Manage Players</button>
+            <button class="btn btn-danger" id="tabHistory" onclick="showTab('history')">Session History</button>
+        </div>
+
+        <!-- Tab: Mark Attendance -->
+        <div id="sectionAttendance">
+            <div class="form-container">
+                <h2>Mark Attendance</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sessionDate">Date *</label>
+                        <input type="date" id="sessionDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="sessionType">Session Type</label>
+                        <select id="sessionType">
+                            <option value="practice">Practice</option>
+                            <option value="match">Match</option>
+                            <option value="tournament">Tournament</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="sessionNotes">Notes</label>
+                        <input type="text" id="sessionNotes" placeholder="Optional notes...">
+                    </div>
+                </div>
+                <p style="color:#aaa; margin:1rem 0 0.5rem;">Select players who are present:</p>
+                <div class="attendance-grid" id="attendanceGrid">
+                </div>
+                <div style="margin-top:1rem; display:flex; gap:1rem; flex-wrap:wrap;">
+                    <button class="btn btn-success" onclick="saveAttendance()">Save Attendance</button>
+                    <button class="btn btn-primary" onclick="selectAll()">Select All</button>
+                    <button class="btn btn-danger" onclick="deselectAll()">Deselect All</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Manage Players -->
+        <div id="sectionPlayers" style="display:none;">
+            <div class="form-container">
+                <h2 id="playerFormTitle">Add Player</h2>
+                <form id="playerForm">
+                    <input type="hidden" id="playerId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="playerName">Name *</label>
+                            <input type="text" id="playerName" placeholder="Player name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="playerPhone">Phone *</label>
+                            <input type="tel" id="playerPhone" placeholder="Phone number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="playerRole">Role</label>
+                            <select id="playerRole">
+                                <option value="batsman">Batsman</option>
+                                <option value="bowler">Bowler</option>
+                                <option value="all-rounder">All-Rounder</option>
+                                <option value="wicket-keeper">Wicket Keeper</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:1rem; margin-top:0.5rem;">
+                        <button type="submit" class="btn btn-primary" id="playerSubmitBtn">Add Player</button>
+                        <button type="button" class="btn btn-danger" id="playerCancelBtn" style="display:none;" onclick="cancelPlayerEdit()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Attendance</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playersTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: Session History -->
+        <div id="sectionHistory" style="display:none;">
+            <div class="table-container">
+                <h2 style="margin-bottom:1rem;">Session History</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Present</th>
+                            <th>Total Players</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning Star Cricket - Attendance Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">MORNING STAR <span>Cricket</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="admin.html">Admin</a></li>
+            <li><a href="member.html">My Stats</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Hero -->
+        <div class="hero">
+            <h1>MORNING STAR</h1>
+            <p>Cricket Attendance Tracker</p>
+            <a href="admin.html" class="btn btn-primary">Admin Panel</a>
+            <a href="member.html" class="btn btn-success">Check My Stats</a>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-cards">
+            <div class="card">
+                <h3>Active Players</h3>
+                <div class="stat" id="homePlayers">0</div>
+            </div>
+            <div class="card">
+                <h3>Total Sessions</h3>
+                <div class="stat" id="homeSessions">0</div>
+            </div>
+            <div class="card">
+                <h3>This Month</h3>
+                <div class="stat" id="homeMonth">0</div>
+                <div class="label">sessions</div>
+            </div>
+            <div class="card">
+                <h3>Avg Turnout</h3>
+                <div class="stat" id="homeAvg">0</div>
+                <div class="label">per session</div>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="table-container">
+            <h2 style="margin-bottom:1rem;">Attendance Leaderboard</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Player</th>
+                        <th>Role</th>
+                        <th>Present</th>
+                        <th>Total</th>
+                        <th>Attendance %</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent Sessions -->
+        <div class="table-container">
+            <h2 style="margin-bottom:1rem;">Recent Sessions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Turnout</th>
+                        <th>Players Present</th>
+                    </tr>
+                </thead>
+                <tbody id="recentSessions">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        window.addEventListener('dataReady', () => {
+            renderHome();
+        });
+
+        function renderHome() {
+            const stats = Store.getOverallStats();
+            document.getElementById('homePlayers').textContent = stats.totalPlayers;
+            document.getElementById('homeSessions').textContent = stats.totalSessions;
+            document.getElementById('homeMonth').textContent = stats.monthSessions;
+            document.getElementById('homeAvg').textContent = stats.avgAttendance;
+
+            renderLeaderboard();
+            renderRecentSessions();
+        }
+
+        function renderLeaderboard() {
+            const players = Store.getPlayers().filter(p => p.status === 'active');
+            const sessions = Store.getSessions();
+
+            if (players.length === 0 || sessions.length === 0) {
+                document.getElementById('leaderboard').innerHTML =
+                    '<tr><td colspan="6" style="text-align:center; color:#888;">No data yet</td></tr>';
+                return;
+            }
+
+            const playerStats = players.map(player => {
+                const att = Store.getPlayerAttendance(player.id);
+                return { ...player, ...att };
+            }).sort((a, b) => b.percentage - a.percentage || b.present - a.present);
+
+            document.getElementById('leaderboard').innerHTML = playerStats.map((p, i) => {
+                const role = p.role ? p.role.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '-';
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${p.name}</td>
+                        <td style="text-transform:capitalize;">${role}</td>
+                        <td>${p.present}</td>
+                        <td>${p.total}</td>
+                        <td><strong>${p.percentage}%</strong></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderRecentSessions() {
+            const sessions = Store.getSessions()
+                .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+                .slice(0, 5);
+
+            const tbody = document.getElementById('recentSessions');
+
+            if (sessions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#888;">No sessions yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = sessions.map(session => {
+                const presentNames = (session.present || [])
+                    .map(id => Utils.getPlayerName(id))
+                    .filter(n => n !== 'Unknown')
+                    .join(', ');
+                return `
+                    <tr>
+                        <td>${Utils.formatDate(session.date)}</td>
+                        <td style="text-transform:capitalize;">${session.type || '-'}</td>
+                        <td>${(session.present || []).length}</td>
+                        <td style="max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${presentNames}">${presentNames || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

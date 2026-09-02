@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Morning Star Cricket</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">MORNING STAR <span>Cricket</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="admin.html">Admin</a></li>
+            <li><a href="member.html">My Stats</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Settings</h1>
+
+        <div class="form-container">
+            <h2>GitHub Data Storage</h2>
+            <p style="color:#aaa; margin-bottom:1rem;">
+                This app stores data in a JSON file in the GitHub repository using the GitHub API.
+                You need a Personal Access Token (PAT) with <strong>repo</strong> / <strong>Contents: Read and write</strong>
+                permission to save changes.
+            </p>
+            <p style="color:#aaa; margin-bottom:1.5rem;">
+                <a href="https://github.com/settings/tokens/new" target="_blank" style="color:#f0c040;">Create a token here</a>
+                (select "repo" scope for classic tokens, or "Contents: Read and write" for fine-grained).
+            </p>
+
+            <div class="form-group">
+                <label for="githubToken">GitHub Personal Access Token</label>
+                <input type="password" id="githubToken" placeholder="Enter your GitHub token here">
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:1rem; flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="saveToken()">Save Token</button>
+                <button class="btn btn-success" onclick="testConnection()">Test Connection</button>
+                <button class="btn btn-danger" onclick="clearToken()">Clear Token</button>
+            </div>
+            <p id="connectionStatus" style="margin-top:1rem;"></p>
+        </div>
+
+        <div class="form-container">
+            <h2>Configuration</h2>
+            <table>
+                <tr><td style="color:#aaa;">Owner</td><td><strong id="cfgOwner">-</strong></td></tr>
+                <tr><td style="color:#aaa;">Repository</td><td><strong id="cfgRepo">-</strong></td></tr>
+                <tr><td style="color:#aaa;">Data File</td><td><strong id="cfgFile">-</strong></td></tr>
+                <tr><td style="color:#aaa;">Branch</td><td><strong id="cfgBranch">-</strong></td></tr>
+                <tr><td style="color:#aaa;">Token Status</td><td id="tokenStatus">-</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        window.addEventListener('dataReady', () => {
+            document.getElementById('cfgOwner').textContent = Store.OWNER;
+            document.getElementById('cfgRepo').textContent = Store.REPO;
+            document.getElementById('cfgFile').textContent = Store.FILE_PATH;
+            document.getElementById('cfgBranch').textContent = Store.BRANCH;
+
+            const token = Store.getToken();
+            if (token) {
+                document.getElementById('githubToken').value = token;
+                document.getElementById('tokenStatus').innerHTML = '<span style="color:#3fb950;">Configured</span>';
+            } else {
+                document.getElementById('tokenStatus').innerHTML = '<span style="color:#f85149;">Not set</span>';
+            }
+        });
+
+        function saveToken() {
+            const token = document.getElementById('githubToken').value.trim();
+            if (!token) {
+                Utils.showToast('Please enter a token', 'error');
+                return;
+            }
+            Store.setToken(token);
+            document.getElementById('tokenStatus').innerHTML = '<span style="color:#3fb950;">Configured</span>';
+            Utils.showToast('Token saved');
+        }
+
+        function clearToken() {
+            Store.setToken('');
+            document.getElementById('githubToken').value = '';
+            document.getElementById('tokenStatus').innerHTML = '<span style="color:#f85149;">Not set</span>';
+            Utils.showToast('Token cleared');
+        }
+
+        async function testConnection() {
+            const status = document.getElementById('connectionStatus');
+            status.innerHTML = '<span style="color:#aaa;">Testing connection...</span>';
+
+            const token = document.getElementById('githubToken').value.trim();
+            if (token) Store.setToken(token);
+
+            try {
+                const data = await Store.load();
+                if (data) {
+                    status.innerHTML = '<span style="color:#3fb950;">Connected. Found ' +
+                        (data.players || []).length + ' players, ' +
+                        (data.sessions || []).length + ' sessions.</span>';
+                } else {
+                    status.innerHTML = '<span style="color:#f85149;">Could not load data.</span>';
+                }
+            } catch (e) {
+                status.innerHTML = '<span style="color:#f85149;">Connection failed: ' + e.message + '</span>';
+            }
+        }
+    </script>
+</body>
+</html>
