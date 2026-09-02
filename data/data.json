@@ -359,6 +359,14 @@
       "id": "1788355241731",
       "createdAt": "2026-09-02T13:20:41.731Z",
       "status": "active"
+    },
+    {
+      "name": "Nithin",
+      "phone": "",
+      "role": "bowler",
+      "id": "1788355272291",
+      "createdAt": "2026-09-02T13:21:12.291Z",
+      "status": "active"
     }
   ],
   "sessions": []
