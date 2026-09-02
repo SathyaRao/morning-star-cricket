@@ -6,14 +6,45 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0d1117;
     color: #e0e0e0;
     min-height: 100vh;
+    background: #0d1117;
+    position: relative;
+}
+
+/* Dharamsala stadium background image with dark overlay for readability */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    pointer-events: none;
+    background-image: url('../images/dharamsala-stadium.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Dark overlay so foreground content stays readable over the photo */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(13, 17, 23, 0.7), rgba(13, 17, 23, 0.82));
 }
 
 /* Navigation */
 .navbar {
-    background: #161b22;
+    background: rgba(22, 27, 34, 0.92);
+    backdrop-filter: blur(4px);
     padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
@@ -22,7 +53,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    border-bottom: 1px solid #30363d;
+    border-bottom: 2px solid #f0c040;
 }
 
 .navbar .logo {
@@ -85,7 +116,7 @@ h2 {
 }
 
 .card {
-    background: #161b22;
+    background: rgba(22, 27, 34, 0.9);
     border: 1px solid #30363d;
     border-radius: 10px;
     padding: 1.5rem;
@@ -120,7 +151,7 @@ h2 {
 
 /* Forms */
 .form-container {
-    background: #161b22;
+    background: rgba(22, 27, 34, 0.9);
     border: 1px solid #30363d;
     border-radius: 10px;
     padding: 1.5rem;
@@ -210,7 +241,7 @@ h2 {
 
 /* Tables */
 .table-container {
-    background: #161b22;
+    background: rgba(22, 27, 34, 0.9);
     border: 1px solid #30363d;
     border-radius: 10px;
     padding: 1.5rem;
@@ -364,16 +395,26 @@ table tr:hover {
     padding: 4rem 1rem;
 }
 
+.hero::before {
+    content: '🏏';
+    display: block;
+    font-size: 3.5rem;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 0 12px rgba(240, 192, 64, 0.5));
+}
+
 .hero h1 {
     font-size: 2.5rem;
     color: #f0c040;
     margin-bottom: 0.5rem;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .hero p {
-    color: #aaa;
+    color: #ccc;
     font-size: 1.1rem;
     margin-bottom: 2rem;
+    letter-spacing: 1px;
 }
 
 .hero .btn {
