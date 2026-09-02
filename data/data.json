@@ -95,6 +95,14 @@
       "id": "1788354729235",
       "createdAt": "2026-09-02T13:12:09.235Z",
       "status": "active"
+    },
+    {
+      "name": "Hameed",
+      "phone": "",
+      "role": "batsman",
+      "id": "1788354734252",
+      "createdAt": "2026-09-02T13:12:14.252Z",
+      "status": "active"
     }
   ],
   "sessions": []
