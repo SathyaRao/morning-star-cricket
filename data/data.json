@@ -231,6 +231,14 @@
       "id": "1788354986883",
       "createdAt": "2026-09-02T13:16:26.883Z",
       "status": "active"
+    },
+    {
+      "name": "Manju Manvi",
+      "phone": "",
+      "role": "batsman",
+      "id": "1788354994835",
+      "createdAt": "2026-09-02T13:16:34.835Z",
+      "status": "active"
     }
   ],
   "sessions": []
