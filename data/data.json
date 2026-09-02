@@ -351,6 +351,14 @@
       "id": "1788355229627",
       "createdAt": "2026-09-02T13:20:29.627Z",
       "status": "active"
+    },
+    {
+      "name": "Anish Bhat",
+      "phone": "",
+      "role": "all-rounder",
+      "id": "1788355241731",
+      "createdAt": "2026-09-02T13:20:41.731Z",
+      "status": "active"
     }
   ],
   "sessions": []
