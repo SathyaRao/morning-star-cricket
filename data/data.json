@@ -87,6 +87,14 @@
       "id": "1788354711171",
       "createdAt": "2026-09-02T13:11:51.171Z",
       "status": "active"
+    },
+    {
+      "name": "Ananth Nayak",
+      "phone": "",
+      "role": "batsman",
+      "id": "1788354729235",
+      "createdAt": "2026-09-02T13:12:09.235Z",
+      "status": "active"
     }
   ],
   "sessions": []
