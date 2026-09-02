@@ -239,6 +239,14 @@
       "id": "1788354994835",
       "createdAt": "2026-09-02T13:16:34.835Z",
       "status": "active"
+    },
+    {
+      "name": "Santhu Maklu",
+      "phone": "",
+      "role": "batsman",
+      "id": "1788355004284",
+      "createdAt": "2026-09-02T13:16:44.284Z",
+      "status": "active"
     }
   ],
   "sessions": []
