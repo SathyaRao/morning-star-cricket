@@ -395,14 +395,6 @@ table tr:hover {
     padding: 4rem 1rem;
 }
 
-.hero::before {
-    content: '🏏';
-    display: block;
-    font-size: 3.5rem;
-    margin-bottom: 0.5rem;
-    filter: drop-shadow(0 0 12px rgba(240, 192, 64, 0.5));
-}
-
 .hero h1 {
     font-size: 2.5rem;
     color: #f0c040;
