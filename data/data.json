@@ -271,6 +271,14 @@
       "id": "1788355032636",
       "createdAt": "2026-09-02T13:17:12.636Z",
       "status": "active"
+    },
+    {
+      "name": "Devi",
+      "phone": "",
+      "role": "bowler",
+      "id": "1788355047043",
+      "createdAt": "2026-09-02T13:17:27.043Z",
+      "status": "active"
     }
   ],
   "sessions": []
