@@ -51,14 +51,17 @@ function updateStats() {
 }
 
 // --- Attendance ---
-function renderAttendanceGrid() {
+function renderAttendanceGrid(reloadFromSession = true) {
     const players = Store.getPlayers().filter(p => p.status === 'active');
     const grid = document.getElementById('attendanceGrid');
 
-    const date = document.getElementById('sessionDate').value;
-    const existingSession = Store.getSessionByDate(date);
-    if (existingSession) {
-        selectedPlayers = new Set(existingSession.present || []);
+    // Only reload the saved session into selection on a fresh render
+    // (date change / initial load / edit). NOT on every toggle re-render,
+    // otherwise user's clicks would be immediately overwritten.
+    if (reloadFromSession) {
+        const date = document.getElementById('sessionDate').value;
+        const existingSession = Store.getSessionByDate(date);
+        selectedPlayers = new Set(existingSession ? (existingSession.present || []) : []);
     }
 
     grid.innerHTML = players.map(player => `
@@ -80,18 +83,18 @@ function togglePlayer(playerId) {
     } else {
         selectedPlayers.add(playerId);
     }
-    renderAttendanceGrid();
+    renderAttendanceGrid(false);
 }
 
 function selectAll() {
     const players = Store.getPlayers().filter(p => p.status === 'active');
     selectedPlayers = new Set(players.map(p => p.id));
-    renderAttendanceGrid();
+    renderAttendanceGrid(false);
 }
 
 function deselectAll() {
     selectedPlayers.clear();
-    renderAttendanceGrid();
+    renderAttendanceGrid(false);
 }
 
 async function saveAttendance() {
