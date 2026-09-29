@@ -460,6 +460,13 @@
       "createdAt": "2026-09-29T04:30:09.187Z"
     }
   ],
-  "tournaments": [],
+  "tournaments": [
+    {
+      "name": "MSPL Super Six",
+      "year": "2026",
+      "id": "1790685468185",
+      "createdAt": "2026-09-29T12:37:48.185Z"
+    }
+  ],
   "playerStats": []
 }
