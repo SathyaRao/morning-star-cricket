@@ -8,6 +8,8 @@ let editingPlayerId = null;
 
 window.addEventListener('dataReady', () => {
     document.getElementById('sessionDate').value = Utils.today();
+    const clearBefore = document.getElementById('clearBeforeDate');
+    if (clearBefore) clearBefore.value = Utils.today();
     document.getElementById('playerForm').addEventListener('submit', handlePlayerSubmit);
 
     document.getElementById('sessionDate').addEventListener('change', () => {
@@ -302,6 +304,52 @@ async function deleteSession(id) {
     await Store.deleteSession(id);
     Utils.hideLoading();
     Utils.showToast('Session deleted');
+    renderHistory();
+    renderPlayers();
+    updateStats();
+}
+
+// Clear attendance sessions dated before the chosen cutoff (players kept).
+async function clearPreviousAttendance() {
+    const cutoff = document.getElementById('clearBeforeDate').value;
+    if (!cutoff) {
+        Utils.showToast('Please pick a cutoff date first', 'error');
+        return;
+    }
+
+    const toRemove = Store.getSessions().filter(s => s.date && s.date < cutoff).length;
+    if (toRemove === 0) {
+        Utils.showToast('No sessions before ' + Utils.formatDate(cutoff), 'error');
+        return;
+    }
+    if (!confirm(`Clear ${toRemove} attendance session(s) before ${Utils.formatDate(cutoff)}? This cannot be undone.`)) {
+        return;
+    }
+
+    Utils.showLoading();
+    const removed = await Store.clearSessionsBefore(cutoff);
+    Utils.hideLoading();
+    Utils.showToast(`Cleared ${removed} previous session(s)`);
+    renderHistory();
+    renderPlayers();
+    updateStats();
+}
+
+// Clear ALL attendance sessions (players kept).
+async function clearAllAttendance() {
+    const total = Store.getSessions().length;
+    if (total === 0) {
+        Utils.showToast('No attendance sessions to clear', 'error');
+        return;
+    }
+    if (!confirm(`Clear ALL ${total} attendance session(s)? Players are kept. This cannot be undone.`)) {
+        return;
+    }
+
+    Utils.showLoading();
+    const removed = await Store.clearSessions();
+    Utils.hideLoading();
+    Utils.showToast(`Cleared all ${removed} session(s)`);
     renderHistory();
     renderPlayers();
     updateStats();

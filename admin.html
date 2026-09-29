@@ -152,6 +152,23 @@
 
         <!-- Tab: Session History -->
         <div id="sectionHistory" style="display:none;">
+            <div class="form-container" style="margin-bottom:1.5rem;">
+                <h2 style="margin-bottom:0.5rem;">Clear Attendance</h2>
+                <p style="color:#aaa; margin-bottom:1rem;">
+                    Remove old attendance sessions. Players are not affected. This cannot be undone.
+                </p>
+                <div class="form-row" style="align-items:flex-end;">
+                    <div class="form-group">
+                        <label for="clearBeforeDate">Clear sessions before</label>
+                        <input type="date" id="clearBeforeDate">
+                    </div>
+                    <div class="form-group" style="display:flex; gap:1rem; flex-wrap:wrap;">
+                        <button class="btn btn-danger" onclick="clearPreviousAttendance()">Clear Previous Attendance</button>
+                        <button class="btn btn-danger" onclick="clearAllAttendance()">Clear All Attendance</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="table-container">
                 <h2 style="margin-bottom:1rem;">Session History</h2>
                 <table>

@@ -205,6 +205,28 @@ const Store = {
         return this.getSessions().find(s => s.date === date) || null;
     },
 
+    // Remove ALL attendance sessions (players are kept). Returns count removed.
+    async clearSessions() {
+        await this._ensure();
+        const removed = (this._data.sessions || []).length;
+        this._data.sessions = [];
+        await this.save();
+        return removed;
+    },
+
+    // Remove attendance sessions dated strictly before the given cutoff (YYYY-MM-DD).
+    // Players are kept. Returns count removed.
+    async clearSessionsBefore(cutoffDate) {
+        await this._ensure();
+        const before = (this._data.sessions || []).length;
+        this._data.sessions = (this._data.sessions || []).filter(
+            s => !s.date || s.date >= cutoffDate
+        );
+        const removed = before - this._data.sessions.length;
+        await this.save();
+        return removed;
+    },
+
     // =========================================================================
     // STATS (sync - uses cached data)
     // =========================================================================
