@@ -117,7 +117,7 @@ const Store = {
     },
 
     _default() {
-        return { players: [], sessions: [] };
+        return { players: [], sessions: [], tournaments: [], playerStats: [] };
     },
 
     async _ensure() {
@@ -254,6 +254,135 @@ const Store = {
                 ? Math.round(sessions.reduce((sum, s) => sum + (s.present || []).length, 0) / sessions.length)
                 : 0,
         };
+    },
+
+    // =========================================================================
+    // TOURNAMENTS
+    // =========================================================================
+    getTournaments() {
+        return (this._data && this._data.tournaments) || [];
+    },
+
+    async addTournament(tournament) {
+        await this._ensure();
+        if (!this._data.tournaments) this._data.tournaments = [];
+        tournament.id = tournament.id || Date.now().toString();
+        tournament.createdAt = new Date().toISOString();
+        this._data.tournaments.push(tournament);
+        await this.save();
+        return tournament;
+    },
+
+    async deleteTournament(id) {
+        await this._ensure();
+        this._data.tournaments = (this._data.tournaments || []).filter(t => t.id !== id);
+        // Remove any player stats tied to this tournament
+        this._data.playerStats = (this._data.playerStats || []).filter(s => s.tournamentId !== id);
+        await this.save();
+    },
+
+    getTournamentById(id) {
+        return this.getTournaments().find(t => t.id === id) || null;
+    },
+
+    // =========================================================================
+    // PLAYER STATS (per player, per tournament)
+    // =========================================================================
+    // A stat record shape:
+    // { id, tournamentId, playerId, matches, runs, ballsFaced, fours, sixes,
+    //   notOuts, highScore, oversBowled, runsConceded, wickets, maidens,
+    //   catches, stumpings, runOuts, createdAt }
+    getStats() {
+        return (this._data && this._data.playerStats) || [];
+    },
+
+    getStatsByTournament(tournamentId) {
+        return this.getStats().filter(s => s.tournamentId === tournamentId);
+    },
+
+    getStatById(id) {
+        return this.getStats().find(s => s.id === id) || null;
+    },
+
+    // A player can have at most one stat record per tournament.
+    getStatForPlayerInTournament(playerId, tournamentId) {
+        return this.getStats().find(
+            s => s.playerId === playerId && s.tournamentId === tournamentId
+        ) || null;
+    },
+
+    async addStat(stat) {
+        await this._ensure();
+        if (!this._data.playerStats) this._data.playerStats = [];
+        stat.id = stat.id || Date.now().toString();
+        stat.createdAt = new Date().toISOString();
+        this._data.playerStats.push(stat);
+        await this.save();
+        return stat;
+    },
+
+    async updateStat(id, updates) {
+        await this._ensure();
+        const index = (this._data.playerStats || []).findIndex(s => s.id === id);
+        if (index !== -1) {
+            this._data.playerStats[index] = { ...this._data.playerStats[index], ...updates };
+            await this.save();
+            return this._data.playerStats[index];
+        }
+        return null;
+    },
+
+    async deleteStat(id) {
+        await this._ensure();
+        this._data.playerStats = (this._data.playerStats || []).filter(s => s.id !== id);
+        await this.save();
+    },
+
+    // Aggregate a single player's stats across all tournaments (career totals + derived).
+    getPlayerCareerStats(playerId) {
+        const records = this.getStats().filter(s => s.playerId === playerId);
+        const totals = {
+            playerId,
+            tournaments: records.length,
+            matches: 0, runs: 0, ballsFaced: 0, fours: 0, sixes: 0, notOuts: 0,
+            highScore: 0, oversBowled: 0, runsConceded: 0, wickets: 0, maidens: 0,
+            catches: 0, stumpings: 0, runOuts: 0,
+        };
+        const num = v => {
+            const n = Number(v);
+            return isNaN(n) ? 0 : n;
+        };
+        records.forEach(r => {
+            totals.matches += num(r.matches);
+            totals.runs += num(r.runs);
+            totals.ballsFaced += num(r.ballsFaced);
+            totals.fours += num(r.fours);
+            totals.sixes += num(r.sixes);
+            totals.notOuts += num(r.notOuts);
+            totals.highScore = Math.max(totals.highScore, num(r.highScore));
+            totals.oversBowled += num(r.oversBowled);
+            totals.runsConceded += num(r.runsConceded);
+            totals.wickets += num(r.wickets);
+            totals.maidens += num(r.maidens);
+            totals.catches += num(r.catches);
+            totals.stumpings += num(r.stumpings);
+            totals.runOuts += num(r.runOuts);
+        });
+
+        // Derived metrics
+        const dismissals = totals.matches - totals.notOuts;
+        totals.battingAverage = dismissals > 0 ? +(totals.runs / dismissals).toFixed(2) : totals.runs;
+        totals.strikeRate = totals.ballsFaced > 0 ? +((totals.runs / totals.ballsFaced) * 100).toFixed(2) : 0;
+        totals.bowlingAverage = totals.wickets > 0 ? +(totals.runsConceded / totals.wickets).toFixed(2) : 0;
+        totals.economy = totals.oversBowled > 0 ? +(totals.runsConceded / totals.oversBowled).toFixed(2) : 0;
+        totals.dismissals = totals.catches + totals.stumpings + totals.runOuts;
+        return totals;
+    },
+
+    // Career stats for every player that has at least one stat record.
+    getAllPlayersCareerStats() {
+        const playerIds = [...new Set(this.getStats().map(s => s.playerId))];
+        return playerIds.map(pid => this.getPlayerCareerStats(pid));
     },
 
     // =========================================================================

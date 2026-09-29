@@ -37,10 +37,17 @@ function showTab(tab) {
     document.getElementById('sectionAttendance').style.display = tab === 'attendance' ? 'block' : 'none';
     document.getElementById('sectionPlayers').style.display = tab === 'players' ? 'block' : 'none';
     document.getElementById('sectionHistory').style.display = tab === 'history' ? 'block' : 'none';
+    document.getElementById('sectionStats').style.display = tab === 'stats' ? 'block' : 'none';
 
     document.getElementById('tabAttendance').className = `btn ${tab === 'attendance' ? 'btn-primary' : 'btn-danger'}`;
     document.getElementById('tabPlayers').className = `btn ${tab === 'players' ? 'btn-primary' : 'btn-danger'}`;
     document.getElementById('tabHistory').className = `btn ${tab === 'history' ? 'btn-primary' : 'btn-danger'}`;
+    document.getElementById('tabStats').className = `btn ${tab === 'stats' ? 'btn-primary' : 'btn-danger'}`;
+
+    if (tab === 'stats') {
+        populateStatDropdowns();
+        renderStatsTable();
+    }
 }
 
 // --- Stats ---
@@ -353,4 +360,222 @@ async function clearAllAttendance() {
     renderHistory();
     renderPlayers();
     updateStats();
+}
+
+// =============================================================================
+// PLAYER STATS (per tournament)
+// =============================================================================
+let editingStatId = null;
+
+const STAT_FIELDS = [
+    ['matches', 'statMatches'], ['runs', 'statRuns'], ['ballsFaced', 'statBalls'],
+    ['fours', 'statFours'], ['sixes', 'statSixes'], ['notOuts', 'statNotOuts'],
+    ['highScore', 'statHighScore'], ['oversBowled', 'statOvers'],
+    ['runsConceded', 'statRunsConceded'], ['wickets', 'statWickets'],
+    ['maidens', 'statMaidens'], ['catches', 'statCatches'],
+    ['stumpings', 'statStumpings'], ['runOuts', 'statRunOuts'],
+];
+
+function populateStatDropdowns() {
+    // Tournaments
+    const tSel = document.getElementById('statTournament');
+    const tournaments = Store.getTournaments();
+    const prevT = tSel.value;
+    tSel.innerHTML = tournaments.length
+        ? tournaments.map(t => `<option value="${t.id}">${t.name}${t.year ? ' (' + t.year + ')' : ''}</option>`).join('')
+        : '<option value="">No tournaments yet</option>';
+    if (prevT && tournaments.some(t => t.id === prevT)) tSel.value = prevT;
+
+    // Players (active only)
+    const pSel = document.getElementById('statPlayer');
+    const players = Store.getPlayers().filter(p => p.status === 'active');
+    pSel.innerHTML = players.length
+        ? players.map(p => `<option value="${p.id}">${p.name}</option>`).join('')
+        : '<option value="">No players</option>';
+}
+
+async function addTournament() {
+    const name = document.getElementById('tournamentName').value.trim();
+    const year = document.getElementById('tournamentYear').value.trim();
+    if (!name) {
+        Utils.showToast('Enter a tournament name', 'error');
+        return;
+    }
+    Utils.showLoading();
+    const t = await Store.addTournament({ name, year });
+    Utils.hideLoading();
+    Utils.showToast('Tournament added');
+    document.getElementById('tournamentName').value = '';
+    document.getElementById('tournamentYear').value = '';
+    populateStatDropdowns();
+    document.getElementById('statTournament').value = t.id;
+    onStatTournamentChange();
+}
+
+async function deleteCurrentTournament() {
+    const tId = document.getElementById('statTournament').value;
+    if (!tId) {
+        Utils.showToast('No tournament selected', 'error');
+        return;
+    }
+    const t = Store.getTournamentById(tId);
+    const count = Store.getStatsByTournament(tId).length;
+    if (!confirm(`Delete tournament "${t ? t.name : ''}" and its ${count} stat record(s)? This cannot be undone.`)) {
+        return;
+    }
+    Utils.showLoading();
+    await Store.deleteTournament(tId);
+    Utils.hideLoading();
+    Utils.showToast('Tournament deleted');
+    cancelStatEdit();
+    populateStatDropdowns();
+    onStatTournamentChange();
+}
+
+function onStatTournamentChange() {
+    cancelStatEdit();
+    renderStatsTable();
+}
+
+function readStatForm() {
+    const stat = {
+        tournamentId: document.getElementById('statTournament').value,
+        playerId: document.getElementById('statPlayer').value,
+    };
+    STAT_FIELDS.forEach(([key, elId]) => {
+        const raw = document.getElementById(elId).value;
+        const n = Number(raw);
+        stat[key] = isNaN(n) ? 0 : n;
+    });
+    return stat;
+}
+
+function resetStatForm() {
+    document.getElementById('statMatches').value = '0';
+    STAT_FIELDS.forEach(([, elId]) => {
+        document.getElementById(elId).value = '0';
+    });
+}
+
+async function saveStat() {
+    const stat = readStatForm();
+    if (!stat.tournamentId) {
+        Utils.showToast('Select or create a tournament first', 'error');
+        return;
+    }
+    if (!stat.playerId) {
+        Utils.showToast('Select a player', 'error');
+        return;
+    }
+
+    Utils.showLoading();
+    if (editingStatId) {
+        await Store.updateStat(editingStatId, stat);
+        Utils.showToast('Stats updated');
+    } else {
+        // Upsert: if this player already has a record in this tournament, update it.
+        const existing = Store.getStatForPlayerInTournament(stat.playerId, stat.tournamentId);
+        if (existing) {
+            await Store.updateStat(existing.id, stat);
+            Utils.showToast('Existing stats updated for ' + Utils.getPlayerName(stat.playerId));
+        } else {
+            await Store.addStat(stat);
+            Utils.showToast('Stats saved for ' + Utils.getPlayerName(stat.playerId));
+        }
+    }
+    Utils.hideLoading();
+    cancelStatEdit();
+    renderStatsTable();
+}
+
+function editStat(id) {
+    const stat = Store.getStatById(id);
+    if (!stat) return;
+    editingStatId = id;
+    document.getElementById('statFormTitle').textContent = 'Edit Player Stats';
+    document.getElementById('statSubmitBtn').textContent = 'Update Stats';
+    document.getElementById('statCancelBtn').style.display = 'inline-block';
+
+    document.getElementById('statTournament').value = stat.tournamentId;
+    document.getElementById('statPlayer').value = stat.playerId;
+    STAT_FIELDS.forEach(([key, elId]) => {
+        document.getElementById(elId).value = stat[key] != null ? stat[key] : 0;
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelStatEdit() {
+    editingStatId = null;
+    document.getElementById('statFormTitle').textContent = 'Enter Player Stats';
+    document.getElementById('statSubmitBtn').textContent = 'Save Stats';
+    document.getElementById('statCancelBtn').style.display = 'none';
+    resetStatForm();
+}
+
+async function deleteStat(id) {
+    if (!confirm('Delete this stat record?')) return;
+    Utils.showLoading();
+    await Store.deleteStat(id);
+    Utils.hideLoading();
+    Utils.showToast('Stat record deleted');
+    renderStatsTable();
+}
+
+function renderStatsTable() {
+    const tId = document.getElementById('statTournament').value;
+    const tbody = document.getElementById('statsTable');
+    const label = document.getElementById('statTournamentLabel');
+    const t = Store.getTournamentById(tId);
+    label.textContent = t ? `— ${t.name}${t.year ? ' (' + t.year + ')' : ''}` : '';
+
+    if (!tId) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:#888;">Create a tournament to start entering stats</td></tr>';
+        document.getElementById('statsPagination').innerHTML = '';
+        return;
+    }
+
+    const records = Store.getStatsByTournament(tId);
+    if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:#888;">No stats entered for this tournament yet</td></tr>';
+        document.getElementById('statsPagination').innerHTML = '';
+        return;
+    }
+
+    const num = v => { const n = Number(v); return isNaN(n) ? 0 : n; };
+    const rows = records.slice().sort((a, b) => num(b.runs) - num(a.runs));
+
+    Utils.paginate({
+        items: rows,
+        containerId: 'statsPagination',
+        stateKey: 'stats',
+        renderPageFn: (pageItems) => {
+            tbody.innerHTML = pageItems.map(s => {
+                const dismissals = num(s.matches) - num(s.notOuts);
+                const batAvg = dismissals > 0
+                    ? (num(s.runs) / dismissals).toFixed(2)
+                    : (num(s.runs) > 0 ? num(s.runs).toFixed(2) : '-');
+                const sr = num(s.ballsFaced) > 0 ? ((num(s.runs) / num(s.ballsFaced)) * 100).toFixed(1) : '-';
+                const bowlAvg = num(s.wickets) > 0 ? (num(s.runsConceded) / num(s.wickets)).toFixed(2) : '-';
+                const econ = num(s.oversBowled) > 0 ? (num(s.runsConceded) / num(s.oversBowled)).toFixed(2) : '-';
+                return `
+                    <tr>
+                        <td>${Utils.getPlayerName(s.playerId)}</td>
+                        <td>${num(s.matches)}</td>
+                        <td>${num(s.runs)}</td>
+                        <td>${num(s.highScore)}</td>
+                        <td>${batAvg}</td>
+                        <td>${sr}</td>
+                        <td>${num(s.wickets)}</td>
+                        <td>${bowlAvg}</td>
+                        <td>${econ}</td>
+                        <td>${num(s.catches)}/${num(s.stumpings)}/${num(s.runOuts)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editStat('${s.id}')">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteStat('${s.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    });
 }

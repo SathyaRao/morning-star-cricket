@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Stats - Morning Star Cricket</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">MORNING STAR <span>Cricket</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="admin.html">Admin</a></li>
+            <li><a href="member.html">My Stats</a></li>
+            <li><a href="stats.html">Player Stats</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1 style="margin:0 0 0.3rem;">Player Stats Dashboard</h1>
+        <p style="color:#aaa; margin-bottom:1.5rem;">Career totals aggregated across all tournaments.</p>
+
+        <!-- Overview cards -->
+        <div class="stats-cards">
+            <div class="card">
+                <h3>Tournaments</h3>
+                <div class="stat" id="ovTournaments">0</div>
+            </div>
+            <div class="card">
+                <h3>Players with Stats</h3>
+                <div class="stat" id="ovPlayers">0</div>
+            </div>
+            <div class="card">
+                <h3>Total Runs</h3>
+                <div class="stat" id="ovRuns">0</div>
+            </div>
+            <div class="card">
+                <h3>Total Wickets</h3>
+                <div class="stat" id="ovWickets">0</div>
+            </div>
+        </div>
+
+        <!-- Leaders -->
+        <div class="stats-cards">
+            <div class="card">
+                <h3>Most Runs</h3>
+                <div class="stat" id="leaderRuns" style="font-size:1.3rem;">-</div>
+                <div class="label" id="leaderRunsVal"></div>
+            </div>
+            <div class="card">
+                <h3>Most Wickets</h3>
+                <div class="stat" id="leaderWickets" style="font-size:1.3rem;">-</div>
+                <div class="label" id="leaderWicketsVal"></div>
+            </div>
+            <div class="card">
+                <h3>Best Bat Avg</h3>
+                <div class="stat" id="leaderAvg" style="font-size:1.3rem;">-</div>
+                <div class="label" id="leaderAvgVal"></div>
+            </div>
+            <div class="card">
+                <h3>Most Dismissals</h3>
+                <div class="stat" id="leaderField" style="font-size:1.3rem;">-</div>
+                <div class="label" id="leaderFieldVal"></div>
+            </div>
+        </div>
+
+        <!-- Filter -->
+        <div style="display:flex; gap:0.8rem; align-items:center; margin:1rem 0; flex-wrap:wrap;">
+            <label style="color:#aaa;">Sort by:
+                <select id="sortBy" onchange="renderStatsDashboard()">
+                    <option value="runs">Runs</option>
+                    <option value="battingAverage">Batting Average</option>
+                    <option value="strikeRate">Strike Rate</option>
+                    <option value="wickets">Wickets</option>
+                    <option value="economy">Economy (low first)</option>
+                    <option value="dismissals">Dismissals (field)</option>
+                    <option value="matches">Matches</option>
+                </select>
+            </label>
+            <input type="text" id="playerSearch" placeholder="Search player..." oninput="renderStatsDashboard()"
+                   style="max-width:220px;">
+        </div>
+
+        <!-- Career stats table -->
+        <div class="table-container">
+            <h2 style="margin-bottom:1rem;">Career Stats</h2>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Player</th>
+                            <th>T</th>
+                            <th>M</th>
+                            <th>Runs</th>
+                            <th>HS</th>
+                            <th>Avg</th>
+                            <th>SR</th>
+                            <th>4s</th>
+                            <th>6s</th>
+                            <th>Wkts</th>
+                            <th>Econ</th>
+                            <th>Bowl Avg</th>
+                            <th>Ct</th>
+                            <th>St</th>
+                            <th>RO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="statsDashboardTable">
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination" id="statsDashboardPagination"></div>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/stats.js"></script>
+</body>
+</html>
