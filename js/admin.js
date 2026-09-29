@@ -455,6 +455,36 @@ function resetStatForm() {
     STAT_FIELDS.forEach(([, elId]) => {
         document.getElementById(elId).value = '0';
     });
+    updateDerivedStats();
+}
+
+// Live-compute the read-only batting Avg/SR and bowling Avg/Econ fields
+// from the raw numbers the admin enters.
+function updateDerivedStats() {
+    const num = id => {
+        const n = Number(document.getElementById(id).value);
+        return isNaN(n) ? 0 : n;
+    };
+    const matches = num('statMatches');
+    const runs = num('statRuns');
+    const balls = num('statBalls');
+    const notOuts = num('statNotOuts');
+    const overs = num('statOvers');
+    const runsConceded = num('statRunsConceded');
+    const wickets = num('statWickets');
+
+    const dismissals = matches - notOuts;
+    const batAvg = dismissals > 0
+        ? (runs / dismissals).toFixed(2)
+        : (runs > 0 ? runs.toFixed(2) : '-');
+    const strikeRate = balls > 0 ? ((runs / balls) * 100).toFixed(1) : '-';
+    const bowlAvg = wickets > 0 ? (runsConceded / wickets).toFixed(2) : '-';
+    const economy = overs > 0 ? (runsConceded / overs).toFixed(2) : '-';
+
+    document.getElementById('statBatAvg').value = batAvg;
+    document.getElementById('statStrikeRate').value = strikeRate;
+    document.getElementById('statBowlAvg').value = bowlAvg;
+    document.getElementById('statEconomy').value = economy;
 }
 
 async function saveStat() {
@@ -501,6 +531,7 @@ function editStat(id) {
     STAT_FIELDS.forEach(([key, elId]) => {
         document.getElementById(elId).value = stat[key] != null ? stat[key] : 0;
     });
+    updateDerivedStats();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
