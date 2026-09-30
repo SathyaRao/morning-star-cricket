@@ -674,6 +674,26 @@
       "runOuts": 0,
       "id": "1790773543416",
       "createdAt": "2026-09-30T13:05:43.416Z"
+    },
+    {
+      "tournamentId": "1790685468185",
+      "playerId": "1788354711171",
+      "matches": 4,
+      "runs": 73,
+      "ballsFaced": 30,
+      "fours": 1,
+      "sixes": 10,
+      "notOuts": 0,
+      "highScore": 53,
+      "oversBowled": 5,
+      "runsConceded": 48,
+      "wickets": 0,
+      "maidens": 0,
+      "catches": 1,
+      "stumpings": 0,
+      "runOuts": 3,
+      "id": "1790774172944",
+      "createdAt": "2026-09-30T13:16:12.944Z"
     }
   ]
 }
