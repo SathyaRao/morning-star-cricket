@@ -46,6 +46,33 @@
         </div>
 
         <div class="form-container">
+            <h2>Transfer Token to Another Device</h2>
+            <p style="color:#aaa; margin-bottom:1rem;">
+                Use this to copy your token to your phone or another browser without retyping it.
+                Save your token above first, then generate a link or QR code and open it on the other device.
+            </p>
+            <p style="color:#f0c040; margin-bottom:1.5rem; font-size:0.9rem;">
+                Note: the link contains your token. Only share it with your own devices and avoid
+                sending it through chat/email. The token stays in the page URL (after #) and is never sent to a server,
+                and this page removes it from the address bar automatically once loaded.
+            </p>
+            <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="generateTransfer()">Generate Link &amp; QR</button>
+                <button class="btn btn-success" onclick="copyTransferLink()">Copy Link</button>
+            </div>
+            <div id="transferArea" style="display:none; margin-top:1.5rem;">
+                <div class="form-group">
+                    <label for="transferLink">Transfer link</label>
+                    <input type="text" id="transferLink" readonly onclick="this.select()">
+                </div>
+                <div id="qrcode" style="margin-top:1rem; display:inline-block; background:#fff; padding:12px; border-radius:8px;"></div>
+                <p style="color:#aaa; margin-top:0.75rem; font-size:0.9rem;">
+                    Scan this QR code with your phone's camera, then open the link. The token will load automatically.
+                </p>
+            </div>
+        </div>
+
+        <div class="form-container">
             <h2>Configuration</h2>
             <table>
                 <tr><td style="color:#aaa;">Owner</td><td><strong id="cfgOwner">-</strong></td></tr>
@@ -57,9 +84,81 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="js/store.js"></script>
     <script src="js/utils.js"></script>
     <script>
+        // Auto-load a token passed via the URL hash (e.g. settings.html#token=XXXX).
+        // Runs immediately so it works even before data loads. The hash is never
+        // sent to the server, and we strip it from the address bar right away.
+        (function loadTokenFromUrl() {
+            const hash = window.location.hash || '';
+            const m = hash.match(/[#&]token=([^&]+)/);
+            if (!m) return;
+            let incoming = '';
+            try { incoming = decodeURIComponent(m[1]); } catch (e) { incoming = m[1]; }
+            incoming = (incoming || '').trim();
+            // Remove the token from the URL immediately for safety.
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+            if (incoming) {
+                Store.setToken(incoming);
+                window.addEventListener('dataReady', () => {
+                    const input = document.getElementById('githubToken');
+                    if (input) input.value = incoming;
+                    const st = document.getElementById('tokenStatus');
+                    if (st) st.innerHTML = '<span style="color:#3fb950;">Configured</span>';
+                });
+                window.addEventListener('load', () => {
+                    if (window.Utils && Utils.showToast) Utils.showToast('Token loaded from link');
+                });
+            }
+        })();
+
+        function buildTransferUrl() {
+            const token = (document.getElementById('githubToken').value || '').trim() || Store.getToken();
+            if (!token) {
+                Utils.showToast('Save a token first', 'error');
+                return null;
+            }
+            const base = window.location.origin + window.location.pathname;
+            return base + '#token=' + encodeURIComponent(token);
+        }
+
+        function generateTransfer() {
+            const url = buildTransferUrl();
+            if (!url) return;
+            document.getElementById('transferArea').style.display = 'block';
+            document.getElementById('transferLink').value = url;
+
+            const container = document.getElementById('qrcode');
+            container.innerHTML = '';
+            if (typeof qrcode === 'function') {
+                const qr = qrcode(0, 'M');
+                qr.addData(url);
+                qr.make();
+                container.innerHTML = qr.createImgTag(5, 8);
+            } else {
+                container.innerHTML = '<span style="color:#f85149;">QR library failed to load. Use the link instead.</span>';
+            }
+        }
+
+        function copyTransferLink() {
+            const url = buildTransferUrl();
+            if (!url) return;
+            document.getElementById('transferArea').style.display = 'block';
+            document.getElementById('transferLink').value = url;
+            const done = () => Utils.showToast('Link copied');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(done).catch(() => {
+                    const el = document.getElementById('transferLink');
+                    el.select(); document.execCommand('copy'); done();
+                });
+            } else {
+                const el = document.getElementById('transferLink');
+                el.select(); document.execCommand('copy'); done();
+            }
+        }
+
         window.addEventListener('dataReady', () => {
             document.getElementById('cfgOwner').textContent = Store.OWNER;
             document.getElementById('cfgRepo').textContent = Store.REPO;
