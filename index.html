@@ -49,12 +49,11 @@
             </div>
         </div>
 
-        <!-- Leaderboard - card grid (multiple players per row, less scrolling) -->
+        <!-- Player attendance summary - all players, card grid, no pagination -->
         <div class="table-container">
-            <h2 style="margin-bottom:1rem;">Attendance Leaderboard</h2>
+            <h2 style="margin-bottom:1rem;">Player Attendance Summary</h2>
             <div class="player-stats-grid" id="leaderboard">
             </div>
-            <div class="pagination" id="leaderboardPagination"></div>
         </div>
 
         <!-- Recent Sessions -->
@@ -107,38 +106,28 @@
             const playerStats = players.map(player => {
                 const att = Store.getPlayerAttendance(player.id);
                 return { ...player, ...att };
-            }).sort((a, b) => b.percentage - a.percentage || b.present - a.present);
+            }).sort((a, b) => a.name.localeCompare(b.name));
 
             const cell = (label, value) =>
                 `<div class="ps-cell"><span class="ps-label">${label}</span><span class="ps-value">${value}</span></div>`;
 
-            Utils.paginate({
-                items: playerStats,
-                containerId: 'leaderboardPagination',
-                stateKey: 'leaderboard',
-                renderPageFn: (pageItems) => {
-                    const startRank = (Utils._pagState && Utils._pagState.leaderboard)
-                        ? (Utils._pagState.leaderboard.currentPage - 1) * Utils._pagState.leaderboard.pageSize
-                        : 0;
-                    document.getElementById('leaderboard').innerHTML = pageItems.map((p, i) => {
-                        const role = p.role ? p.role.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '-';
-                        return `
-                            <div class="player-stat-card">
-                                <div class="ps-head">
-                                    <span class="ps-rank">#${startRank + i + 1}</span>
-                                    <span class="ps-name">${p.name}</span>
-                                    <span class="ps-sub">${role}</span>
-                                </div>
-                                <div class="ps-stats">
-                                    ${cell('Present', p.present)}
-                                    ${cell('Total', p.total)}
-                                    ${cell('Attendance', '<strong>' + p.percentage + '%</strong>')}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            });
+            // Show ALL players at once on the home page (no pagination).
+            document.getElementById('leaderboard').innerHTML = playerStats.map(p => {
+                const role = p.role ? p.role.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '-';
+                return `
+                    <div class="player-stat-card">
+                        <div class="ps-head">
+                            <span class="ps-name">${p.name}</span>
+                            <span class="ps-sub">${role}</span>
+                        </div>
+                        <div class="ps-stats">
+                            ${cell('Present', p.present)}
+                            ${cell('Total', p.total)}
+                            ${cell('Attendance', '<strong>' + p.percentage + '%</strong>')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function renderRecentSessions() {
