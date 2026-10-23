@@ -49,23 +49,11 @@
             </div>
         </div>
 
-        <!-- Leaderboard -->
+        <!-- Leaderboard - card grid (multiple players per row, less scrolling) -->
         <div class="table-container">
             <h2 style="margin-bottom:1rem;">Attendance Leaderboard</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Player</th>
-                        <th>Role</th>
-                        <th>Present</th>
-                        <th>Total</th>
-                        <th>Attendance %</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboard">
-                </tbody>
-            </table>
+            <div class="player-stats-grid" id="leaderboard">
+            </div>
             <div class="pagination" id="leaderboardPagination"></div>
         </div>
 
@@ -112,7 +100,7 @@
 
             if (players.length === 0 || sessions.length === 0) {
                 document.getElementById('leaderboard').innerHTML =
-                    '<tr><td colspan="6" style="text-align:center; color:#888;">No data yet</td></tr>';
+                    '<p style="text-align:center; color:#888; grid-column:1/-1;">No data yet</p>';
                 return;
             }
 
@@ -120,6 +108,9 @@
                 const att = Store.getPlayerAttendance(player.id);
                 return { ...player, ...att };
             }).sort((a, b) => b.percentage - a.percentage || b.present - a.present);
+
+            const cell = (label, value) =>
+                `<div class="ps-cell"><span class="ps-label">${label}</span><span class="ps-value">${value}</span></div>`;
 
             Utils.paginate({
                 items: playerStats,
@@ -132,14 +123,18 @@
                     document.getElementById('leaderboard').innerHTML = pageItems.map((p, i) => {
                         const role = p.role ? p.role.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '-';
                         return `
-                            <tr>
-                                <td>${startRank + i + 1}</td>
-                                <td>${p.name}</td>
-                                <td style="text-transform:capitalize;">${role}</td>
-                                <td>${p.present}</td>
-                                <td>${p.total}</td>
-                                <td><strong>${p.percentage}%</strong></td>
-                            </tr>
+                            <div class="player-stat-card">
+                                <div class="ps-head">
+                                    <span class="ps-rank">#${startRank + i + 1}</span>
+                                    <span class="ps-name">${p.name}</span>
+                                    <span class="ps-sub">${role}</span>
+                                </div>
+                                <div class="ps-stats">
+                                    ${cell('Present', p.present)}
+                                    ${cell('Total', p.total)}
+                                    ${cell('Attendance', '<strong>' + p.percentage + '%</strong>')}
+                                </div>
+                            </div>
                         `;
                     }).join('');
                 }
