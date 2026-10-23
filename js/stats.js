@@ -47,13 +47,17 @@ function setLeader(nameElId, valElId, entry, valText) {
 }
 
 function renderStatsDashboard() {
-    const tbody = document.getElementById('statsDashboardTable');
+    const grid = document.getElementById('statsDashboardGrid');
     let careers = Store.getAllPlayersCareerStats()
         .map(c => ({ ...c, name: Utils.getPlayerName(c.playerId) }));
 
-    if (careers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="16" style="text-align:center; color:#888;">No player stats recorded yet. Add them from the Admin &rarr; Player Stats tab.</td></tr>';
+    const emptyMsg = (msg) => {
+        grid.innerHTML = `<p style="text-align:center; color:#888; grid-column:1/-1;">${msg}</p>`;
         document.getElementById('statsDashboardPagination').innerHTML = '';
+    };
+
+    if (careers.length === 0) {
+        emptyMsg('No player stats recorded yet. Add them from the Admin &rarr; Player Stats tab.');
         return;
     }
 
@@ -76,10 +80,12 @@ function renderStatsDashboard() {
     });
 
     if (careers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="16" style="text-align:center; color:#888;">No players match your search</td></tr>';
-        document.getElementById('statsDashboardPagination').innerHTML = '';
+        emptyMsg('No players match your search');
         return;
     }
+
+    const cell = (label, value) =>
+        `<div class="ps-cell"><span class="ps-label">${label}</span><span class="ps-value">${value}</span></div>`;
 
     Utils.paginate({
         items: careers,
@@ -88,25 +94,35 @@ function renderStatsDashboard() {
         renderPageFn: (pageItems) => {
             const pag = Utils._pagState && Utils._pagState.statsDashboard;
             const startRank = pag ? (pag.currentPage - 1) * pag.pageSize : 0;
-            tbody.innerHTML = pageItems.map((c, i) => `
-                <tr>
-                    <td>${startRank + i + 1}</td>
-                    <td>${c.name}</td>
-                    <td>${c.tournaments}</td>
-                    <td>${c.matches}</td>
-                    <td><strong>${c.runs}</strong></td>
-                    <td>${c.highScore}</td>
-                    <td>${c.battingAverage}</td>
-                    <td>${c.strikeRate}</td>
-                    <td>${c.fours}</td>
-                    <td>${c.sixes}</td>
-                    <td><strong>${c.wickets}</strong></td>
-                    <td>${c.oversBowled > 0 ? c.economy : '-'}</td>
-                    <td>${c.wickets > 0 ? c.bowlingAverage : '-'}</td>
-                    <td>${c.catches}</td>
-                    <td>${c.stumpings}</td>
-                    <td>${c.runOuts}</td>
-                </tr>
+            grid.innerHTML = pageItems.map((c, i) => `
+                <div class="player-stat-card">
+                    <div class="ps-head">
+                        <span class="ps-rank">#${startRank + i + 1}</span>
+                        <span class="ps-name">${c.name}</span>
+                        <span class="ps-sub">${c.tournaments} tnmt &middot; ${c.matches} M</span>
+                    </div>
+                    <div class="ps-section-label">Batting</div>
+                    <div class="ps-stats">
+                        ${cell('Runs', '<strong>' + c.runs + '</strong>')}
+                        ${cell('HS', c.highScore)}
+                        ${cell('Avg', c.battingAverage)}
+                        ${cell('SR', c.strikeRate)}
+                        ${cell('4s', c.fours)}
+                        ${cell('6s', c.sixes)}
+                    </div>
+                    <div class="ps-section-label">Bowling</div>
+                    <div class="ps-stats">
+                        ${cell('Wkts', '<strong>' + c.wickets + '</strong>')}
+                        ${cell('Econ', c.oversBowled > 0 ? c.economy : '-')}
+                        ${cell('Avg', c.wickets > 0 ? c.bowlingAverage : '-')}
+                    </div>
+                    <div class="ps-section-label">Fielding</div>
+                    <div class="ps-stats">
+                        ${cell('Ct', c.catches)}
+                        ${cell('St', c.stumpings)}
+                        ${cell('RO', c.runOuts)}
+                    </div>
+                </div>
             `).join('');
         }
     });

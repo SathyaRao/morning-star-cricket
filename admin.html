@@ -22,7 +22,10 @@
     <div class="container" id="adminLock">
         <div class="form-container" style="max-width:420px; margin:3rem auto;">
             <h2>Admin Access</h2>
-            <p style="color:#aaa; margin-bottom:1rem;">Enter the admin password to manage players and attendance.</p>
+            <p style="color:#aaa; margin-bottom:1rem;">
+                Enter your password to manage players and attendance.
+                <br><span style="font-size:0.85rem;">Admins can mark attendance for today only; superusers have full access to all dates.</span>
+            </p>
             <div class="form-group">
                 <label for="adminPassword">Password</label>
                 <input type="password" id="adminPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')unlockAdmin()">
@@ -34,7 +37,7 @@
 
     <div class="container" id="adminContent" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h1 style="margin:0;">Admin Panel</h1>
+            <h1 style="margin:0;">Admin Panel <span id="roleBadge" style="font-size:0.9rem; color:#f0c040; font-weight:normal;"></span></h1>
             <button class="btn btn-danger btn-sm" onclick="lockAdmin()">Lock</button>
         </div>
 
@@ -72,6 +75,10 @@
         <div id="sectionAttendance">
             <div class="form-container">
                 <h2>Mark Attendance</h2>
+                <p id="attendanceRestrictionNote" style="display:none; color:#f0c040; margin:0 0 1rem;">
+                    You are signed in as <strong>Admin</strong>. You can mark attendance for <strong>today only</strong>.
+                    Ask a superuser to edit past dates.
+                </p>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="sessionDate">Date *</label>

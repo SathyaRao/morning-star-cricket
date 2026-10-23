@@ -14,6 +14,14 @@ window.addEventListener('dataReady', () => {
 
     document.getElementById('sessionDate').addEventListener('change', () => {
         const date = document.getElementById('sessionDate').value;
+        // Restricted admins are pinned to today; snap back if they change it.
+        if (isRestrictedAdmin() && date !== Utils.today()) {
+            Utils.showToast('Admins can only mark attendance for today.', 'error');
+            document.getElementById('sessionDate').value = Utils.today();
+            selectedPlayers.clear();
+            renderAttendanceGrid();
+            return;
+        }
         const session = Store.getSessionByDate(date);
         if (session) {
             selectedPlayers = new Set(session.present || []);
@@ -31,6 +39,47 @@ window.addEventListener('dataReady', () => {
     renderPlayers();
     renderHistory();
 });
+
+// --- Role-based restrictions ---
+// A restricted "admin" (not superuser) may only mark/edit attendance for today.
+// A "superuser" has full access to all dates. isSuperuser()/getAdminRole() come
+// from admin-auth.js. Defensive: if those are missing, default to full access.
+function isRestrictedAdmin() {
+    return typeof isSuperuser === 'function' ? !isSuperuser() : false;
+}
+
+// Called by admin-auth.js once the panel is shown. Locks the attendance date
+// field to today for restricted admins and shows the appropriate role UI.
+function applyRoleRestrictions() {
+    const role = typeof getAdminRole === 'function' ? getAdminRole() : 'superuser';
+    const badge = document.getElementById('roleBadge');
+    if (badge) {
+        badge.textContent = role === 'superuser' ? '(Superuser)' : '(Admin - today only)';
+    }
+
+    const dateInput = document.getElementById('sessionDate');
+    const note = document.getElementById('attendanceRestrictionNote');
+    const today = Utils.today();
+
+    if (isRestrictedAdmin()) {
+        // Pin the date picker to today: value fixed, and min/max prevent choosing
+        // any other day in browsers that honour them.
+        if (dateInput) {
+            dateInput.value = today;
+            dateInput.min = today;
+            dateInput.max = today;
+        }
+        if (note) note.style.display = 'block';
+        // Reload the grid for today's session.
+        renderAttendanceGrid();
+    } else {
+        if (dateInput) {
+            dateInput.removeAttribute('min');
+            dateInput.removeAttribute('max');
+        }
+        if (note) note.style.display = 'none';
+    }
+}
 
 // --- Tabs ---
 function showTab(tab) {
@@ -113,6 +162,14 @@ async function saveAttendance() {
 
     if (!date) {
         Utils.showToast('Please select a date', 'error');
+        return;
+    }
+
+    // Restricted admins may only mark attendance for the current date.
+    if (isRestrictedAdmin() && date !== Utils.today()) {
+        Utils.showToast('Admins can only mark attendance for today. Ask a superuser to edit past dates.', 'error');
+        document.getElementById('sessionDate').value = Utils.today();
+        renderAttendanceGrid();
         return;
     }
 
@@ -293,6 +350,11 @@ function renderHistory() {
 }
 
 function loadSession(date) {
+    // Restricted admins cannot open a past session for editing.
+    if (isRestrictedAdmin() && date !== Utils.today()) {
+        Utils.showToast('Admins can only edit today\'s attendance. Ask a superuser for past dates.', 'error');
+        return;
+    }
     document.getElementById('sessionDate').value = date;
     const session = Store.getSessionByDate(date);
     if (session) {
