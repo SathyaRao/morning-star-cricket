@@ -106,7 +106,7 @@
             const playerStats = players.map(player => {
                 const att = Store.getPlayerAttendance(player.id);
                 return { ...player, ...att };
-            }).sort((a, b) => a.name.localeCompare(b.name));
+            }).sort((a, b) => b.percentage - a.percentage || b.present - a.present || a.name.localeCompare(b.name));
 
             const cell = (label, value) =>
                 `<div class="ps-cell"><span class="ps-label">${label}</span><span class="ps-value">${value}</span></div>`;
